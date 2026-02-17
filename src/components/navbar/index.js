@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -23,6 +23,14 @@ const Navbar = ({ theme = 'light', onToggleTheme }) => {
   const dispatch = useDispatch();
   const { token, user } = useSelector(state => state.loginData);
 
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   const toggleMenu = () => setIsOpen(prev => !prev);
 
   const handleLogout = () => {
@@ -36,7 +44,7 @@ const Navbar = ({ theme = 'light', onToggleTheme }) => {
     <div
       className={cn(
         'flex items-center gap-2 text-sm font-medium',
-        isMobile ? 'flex-col gap-4 text-base' : ''
+        isMobile ? 'flex-col items-start gap-6 text-lg' : ''
       )}
     >
       {NAV_LINKS.filter(link => (link.protected ? token : true)).map(({ label, path }) => {
@@ -61,34 +69,47 @@ const Navbar = ({ theme = 'light', onToggleTheme }) => {
           </Link>
         );
       })}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
+      <div className={cn('flex gap-3 sm:items-center', isMobile ? 'w-full flex-col gap-4 border-t border-base-200 pt-4' : 'sm:flex-row')}>
         <Button
           variant="ghost"
           size="sm"
-          className="border border-transparent bg-transparent text-muted hover:bg-black/5 dark:hover:bg-white/10"
+          className={cn(
+            'border border-transparent bg-transparent text-muted hover:bg-black/5 dark:hover:bg-white/10',
+            isMobile ? 'w-full justify-center' : ''
+          )}
           onClick={onToggleTheme}
           aria-label="Toggle theme"
         >
           {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          <span className="hidden text-xs uppercase tracking-[0.4em] sm:inline">
+          <span className={cn('text-xs uppercase tracking-[0.4em]', isMobile ? 'ml-2' : 'hidden sm:inline')}>
             {theme === 'dark' ? 'Light' : 'Dark'} Mode
           </span>
         </Button>
         {token ? (
-          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-2">
+          <div className={cn('flex gap-3', isMobile ? 'w-full flex-col' : 'flex-col items-start sm:flex-row sm:items-center sm:gap-2')}>
             <p className="text-xs uppercase tracking-[0.4em] text-muted">
               Welcome {user}
             </p>
-            <Button variant="ghost" size="sm" onClick={() => setShowLogoutConfirm(true)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={isMobile ? 'btn-outline w-full rounded-2xl' : ''}
+              onClick={() => setShowLogoutConfirm(true)}
+            >
               Logout
             </Button>
           </div>
         ) : (
-          <div className="flex gap-2">
-            <Button variant="secondary" size="sm" onClick={() => navigate('/login')}>
+          <div className={cn('flex gap-2', isMobile ? 'w-full flex-col gap-3' : '')}>
+            <Button
+              variant="secondary"
+              size="sm"
+              className={isMobile ? 'w-full rounded-2xl' : ''}
+              onClick={() => navigate('/login')}
+            >
               Login
             </Button>
-            <Button size="sm" onClick={() => navigate('/signup')}>
+            <Button size="sm" className={isMobile ? 'btn-primary w-full rounded-2xl' : ''} onClick={() => navigate('/signup')}>
               Sign Up
             </Button>
           </div>
@@ -118,18 +139,33 @@ const Navbar = ({ theme = 'light', onToggleTheme }) => {
         {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </Button>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="absolute left-4 right-4 top-[4.5rem] rounded-3xl border border-white/10 bg-surface p-6 shadow-glow sm:hidden dark:bg-dusk/95"
-          >
-            {renderLinks(true)}
-          </motion.div>
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {isOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[990] bg-base-200/90 backdrop-blur-sm sm:hidden"
+                onClick={toggleMenu}
+              >
+                <motion.div
+                  initial={{ y: 40, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: 40, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  className="mx-4 mt-24 rounded-[2rem] border border-base-300 bg-base-100/95 p-6 shadow-[0_25px_80px_rgba(15,23,42,0.2)]"
+                  onClick={event => event.stopPropagation()}
+                >
+                  <div className="text-xs uppercase tracking-[0.5em] text-muted">Navigate</div>
+                  <div className="mt-4 space-y-4">{renderLinks(true)}</div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
 
       {showLogoutConfirm &&
         typeof document !== 'undefined' &&
