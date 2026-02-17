@@ -44,6 +44,8 @@ function App() {
 
   useEffect(() => {
     document.body.classList.toggle('theme-dark', theme === 'dark');
+    const themeName = theme === 'dark' ? 'luminaDark' : 'luminaLight';
+    document.documentElement.setAttribute('data-theme', themeName);
     localStorage.setItem('notes-theme', theme);
   }, [theme]);
 

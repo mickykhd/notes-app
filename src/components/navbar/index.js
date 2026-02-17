@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -40,82 +40,106 @@ const Navbar = ({ theme = 'light', onToggleTheme }) => {
     setShowLogoutConfirm(false);
   };
 
-  const renderLinks = (isMobile = false) => (
-    <div
-      className={cn(
+  const filteredLinks = useMemo(
+    () => NAV_LINKS.filter(link => (link.protected ? token : true)),
+    [token]
+  );
+
+  const renderLinks = useCallback(
+    (isMobile = false) => {
+      const containerClasses = cn(
         'flex items-center gap-2 text-sm font-medium',
         isMobile ? 'flex-col items-start gap-6 text-lg' : ''
-      )}
-    >
-      {NAV_LINKS.filter(link => (link.protected ? token : true)).map(({ label, path }) => {
-        const isActive = location.pathname === path;
-        return (
-          <Link
-            key={path}
-            to={path}
+      );
+
+      return (
+        <div className={containerClasses}>
+          {filteredLinks.map(({ label, path }) => {
+            const isActive = location.pathname === path;
+            return (
+              <Link
+                key={path}
+                to={path}
+                className={cn(
+                  'relative px-3 py-1 transition-colors duration-150',
+                  isActive ? 'text-primary' : 'text-muted hover:text-primary'
+                )}
+                onClick={() => setIsOpen(false)}
+              >
+                {label}
+                {isActive && (
+                  <motion.span
+                    layoutId="nav-pill"
+                    className="absolute inset-x-1 -bottom-2 h-0.5 rounded-full bg-[var(--accent-color)]"
+                  />
+                )}
+              </Link>
+            );
+          })}
+
+          <div
             className={cn(
-              'relative px-3 py-1 transition-colors',
-              isActive ? 'text-primary' : 'text-muted hover:text-primary'
+              'flex gap-3 sm:items-center',
+              isMobile ? 'w-full flex-col gap-4 border-t border-base-200 pt-4' : 'sm:flex-row'
             )}
-            onClick={() => setIsOpen(false)}
           >
-            {label}
-            {isActive && (
-              <motion.span
-                layoutId="nav-pill"
-                className="absolute inset-x-1 -bottom-2 h-0.5 rounded-full bg-[var(--accent-color)]"
-              />
-            )}
-          </Link>
-        );
-      })}
-      <div className={cn('flex gap-3 sm:items-center', isMobile ? 'w-full flex-col gap-4 border-t border-base-200 pt-4' : 'sm:flex-row')}>
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            'border border-transparent bg-transparent text-muted hover:bg-black/5 dark:hover:bg-white/10',
-            isMobile ? 'w-full justify-center' : ''
-          )}
-          onClick={onToggleTheme}
-          aria-label="Toggle theme"
-        >
-          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          <span className={cn('text-xs uppercase tracking-[0.4em]', isMobile ? 'ml-2' : 'hidden sm:inline')}>
-            {theme === 'dark' ? 'Light' : 'Dark'} Mode
-          </span>
-        </Button>
-        {token ? (
-          <div className={cn('flex gap-3', isMobile ? 'w-full flex-col' : 'flex-col items-start sm:flex-row sm:items-center sm:gap-2')}>
-            <p className="text-xs uppercase tracking-[0.4em] text-muted">
-              Welcome {user}
-            </p>
             <Button
               variant="ghost"
               size="sm"
-              className={isMobile ? 'btn-outline w-full rounded-2xl' : ''}
-              onClick={() => setShowLogoutConfirm(true)}
+              className={cn(
+                'border border-transparent bg-transparent text-muted hover:bg-black/5 dark:hover:bg-white/10',
+                isMobile ? 'w-full justify-center' : ''
+              )}
+              onClick={onToggleTheme}
+              aria-label="Toggle theme"
             >
-              Logout
+              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              <span className={cn('text-xs uppercase tracking-[0.4em]', isMobile ? 'ml-2' : 'hidden sm:inline')}>
+                {theme === 'dark' ? 'Light' : 'Dark'} Mode
+              </span>
             </Button>
+
+            {token ? (
+              <div
+                className={cn(
+                  'flex gap-3',
+                  isMobile ? 'w-full flex-col' : 'flex-col items-start sm:flex-row sm:items-center sm:gap-2'
+                )}
+              >
+                <p className="text-xs uppercase tracking-[0.4em] text-muted">Welcome {user}</p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={isMobile ? 'btn-outline w-full rounded-2xl' : ''}
+                  onClick={() => setShowLogoutConfirm(true)}
+                >
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <div className={cn('flex gap-2', isMobile ? 'w-full flex-col gap-3' : '')}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className={isMobile ? 'w-full rounded-2xl' : ''}
+                  onClick={() => navigate('/login')}
+                >
+                  Login
+                </Button>
+                <Button
+                  size="sm"
+                  className={isMobile ? 'btn-primary w-full rounded-2xl' : ''}
+                  onClick={() => navigate('/signup')}
+                >
+                  Sign Up
+                </Button>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className={cn('flex gap-2', isMobile ? 'w-full flex-col gap-3' : '')}>
-            <Button
-              variant="secondary"
-              size="sm"
-              className={isMobile ? 'w-full rounded-2xl' : ''}
-              onClick={() => navigate('/login')}
-            >
-              Login
-            </Button>
-            <Button size="sm" className={isMobile ? 'btn-primary w-full rounded-2xl' : ''} onClick={() => navigate('/signup')}>
-              Sign Up
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
+        </div>
+      );
+    },
+    [filteredLinks, location.pathname, navigate, onToggleTheme, setIsOpen, theme, token, user]
   );
 
   return (
@@ -147,15 +171,21 @@ const Navbar = ({ theme = 'light', onToggleTheme }) => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[990] bg-base-200/90 backdrop-blur-sm sm:hidden"
+                transition={{ duration: 0.15 }}
+                className="fixed inset-0 z-[990] sm:hidden"
+                style={{ backgroundColor: theme === 'dark' ? 'rgba(5, 6, 15, 0.96)' : 'rgba(245, 247, 251, 0.96)' }}
                 onClick={toggleMenu}
               >
                 <motion.div
-                  initial={{ y: 40, opacity: 0 }}
+                  initial={{ y: 36, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: 40, opacity: 0 }}
-                  transition={{ duration: 0.3, ease: 'easeOut' }}
-                  className="mx-4 mt-24 rounded-[2rem] border border-base-300 bg-base-100/95 p-6 shadow-[0_25px_80px_rgba(15,23,42,0.2)]"
+                  exit={{ y: 36, opacity: 0 }}
+                  transition={{ type: 'spring', stiffness: 360, damping: 32 }}
+                  className="mx-4 mt-20 rounded-[1.75rem] border border-base-300 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.18)]"
+                  style={{
+                    backgroundColor: theme === 'dark' ? 'rgba(15, 18, 30, 0.95)' : 'rgba(255, 255, 255, 0.98)',
+                    color: theme === 'dark' ? 'var(--fg-primary)' : 'var(--fg-primary)',
+                  }}
                   onClick={event => event.stopPropagation()}
                 >
                   <div className="text-xs uppercase tracking-[0.5em] text-muted">Navigate</div>
