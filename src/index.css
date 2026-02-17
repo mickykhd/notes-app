@@ -1,0 +1,166 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+@layer base {
+  :root {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    --bg-app: #f5f7fb;
+    --fg-primary: #0b1220;
+    --fg-muted: #4d5c7c;
+    --surface-card-bg: rgba(255, 255, 255, 0.92);
+    --surface-card-border: rgba(15, 23, 42, 0.08);
+    --surface-panel-bg: #ffffff;
+    --surface-panel-border: rgba(15, 23, 42, 0.06);
+    --field-bg: rgba(255, 255, 255, 0.9);
+    --field-border: rgba(15, 23, 42, 0.15);
+    --accent-color: #2563eb;
+    --btn-primary-gradient: linear-gradient(120deg, #2563eb, #7c3aed, #0ea5e9);
+    --btn-primary-color: #f8fafc;
+    --btn-primary-shadow: 0 15px 45px rgba(37, 99, 235, 0.25);
+    --btn-secondary-bg: rgba(15, 23, 42, 0.08);
+    --btn-secondary-border: rgba(15, 23, 42, 0.1);
+    --btn-secondary-color: #0b1220;
+    --btn-ghost-color: #0b1220;
+    --btn-danger-bg: linear-gradient(120deg, #ef4444, #f97316);
+    --btn-danger-color: #fff;
+  }
+
+  body.theme-dark {
+    --bg-app: #05060f;
+    --fg-primary: #f7f8ff;
+    --fg-muted: rgba(247, 248, 255, 0.75);
+    --surface-card-bg: rgba(255, 255, 255, 0.04);
+    --surface-card-border: rgba(255, 255, 255, 0.07);
+    --surface-panel-bg: rgba(15, 18, 30, 0.85);
+    --surface-panel-border: rgba(255, 255, 255, 0.05);
+    --field-bg: rgba(10, 12, 21, 0.85);
+    --field-border: rgba(255, 255, 255, 0.08);
+    --accent-color: #7c3aed;
+    --btn-primary-gradient: linear-gradient(120deg, #4f46e5, #9333ea, #14b8a6);
+    --btn-primary-color: #f5f5ff;
+    --btn-primary-shadow: 0 18px 50px rgba(79, 70, 229, 0.35);
+    --btn-secondary-bg: rgba(255, 255, 255, 0.1);
+    --btn-secondary-border: rgba(255, 255, 255, 0.18);
+    --btn-secondary-color: #f5f7ff;
+    --btn-ghost-color: rgba(245, 247, 255, 0.95);
+    --btn-danger-bg: linear-gradient(120deg, #f43f5e, #fb923c);
+    --btn-danger-color: #fff;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--bg-app);
+    color: var(--fg-primary);
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .cosmic-gradient {
+    position: relative;
+    background-color: var(--bg-app);
+    overflow: hidden;
+  }
+
+  .text-primary {
+    color: var(--fg-primary);
+  }
+
+  .text-muted {
+    color: var(--fg-muted);
+  }
+
+  .text-accent {
+    color: var(--accent-color);
+  }
+
+  .bg-surface {
+    background-color: var(--surface-panel-bg);
+    border: 1px solid var(--surface-panel-border);
+  }
+
+  .surface-panel {
+    background-color: var(--surface-panel-bg);
+    border: 1px solid var(--surface-panel-border);
+    border-radius: 1.25rem;
+    box-shadow: 0 15px 35px rgba(15, 23, 42, 0.08);
+  }
+}
+
+@layer components {
+  .glass-panel {
+    background-color: var(--surface-card-bg);
+    border: 1px solid var(--surface-card-border);
+    border-radius: 1.25rem;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+    backdrop-filter: blur(30px);
+    color: var(--fg-primary);
+  }
+
+  .orb {
+    background: radial-gradient(circle, rgba(111, 126, 246, 0.65) 0%, rgba(111, 126, 246, 0) 70%);
+    filter: blur(12px);
+  }
+
+  .btn-primary {
+    background-image: var(--btn-primary-gradient);
+    color: var(--btn-primary-color);
+    box-shadow: var(--btn-primary-shadow);
+    border: none;
+  }
+
+  .btn-secondary {
+    background-color: var(--btn-secondary-bg);
+    color: var(--btn-secondary-color);
+    border: 1px solid var(--btn-secondary-border);
+  }
+
+  .btn-ghost {
+    background-color: transparent;
+    color: var(--btn-ghost-color);
+    border: 1px solid transparent;
+  }
+
+  .btn-danger {
+    background-image: var(--btn-danger-bg);
+    color: var(--btn-danger-color);
+    box-shadow: 0 20px 50px rgba(244, 63, 94, 0.35);
+  }
+
+  .field-input {
+    background-color: var(--field-bg);
+    border: 1px solid var(--field-border);
+    color: var(--fg-primary);
+  }
+
+  .field-input::placeholder {
+    color: var(--fg-muted);
+    opacity: 0.8;
+  }
+}
+
+@keyframes auroraDrift {
+  0% {
+    transform: translate3d(-10%, -5%, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(10%, 5%, 0) scale(1.1);
+  }
+  100% {
+    transform: translate3d(-10%, -5%, 0) scale(1);
+  }
+}

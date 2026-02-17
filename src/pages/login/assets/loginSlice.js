@@ -16,13 +16,18 @@ const loginSlice = createSlice({
       if (!action) return;
       const { name, value } = action.payload;
       if (name === 'token') {
-        const { user, token } = value;
-        state.token = token;
-        state.user = user.name;
+        const { user, token } = value || {};
+        state.token = token || '';
+        const derivedName =
+          typeof user === 'string'
+            ? user
+            : user?.name || user?.email || 'Explorer';
+        state.user = derivedName;
       }
       if (name === 'logout') {
         state.token = '';
         state.user = '';
+        state.notesLength = [];
       }
       if (name === 'addRender') {
         state.notesLength = value;
