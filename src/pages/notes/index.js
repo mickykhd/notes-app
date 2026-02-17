@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { useSelector } from 'react-redux';
 import { toast } from 'sonner';
@@ -14,6 +15,7 @@ const Notes = () => {
   const [editingId, setEditingId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
 
   const fetchNotes = useCallback(async () => {
     if (!token) return;
@@ -81,9 +83,7 @@ const Notes = () => {
   };
 
   const handleDelete = async id => {
-    if (!token) return;
-    const confirmed = window.confirm('Delete this note permanently?');
-    if (!confirmed) return;
+    if (!token || !id) return;
     try {
       const response = await fetch(`${baseURL}/delete/${id}`, {
         method: 'DELETE',
@@ -100,8 +100,13 @@ const Notes = () => {
     } catch (error) {
       console.error(error);
       toast.error('Unable to delete note.');
+    } finally {
+      setPendingDeleteId(null);
     }
   };
+
+  const openDeleteModal = id => setPendingDeleteId(id);
+  const closeDeleteModal = () => setPendingDeleteId(null);
 
   const startEditing = (note, id) => {
     setInput(note);
@@ -208,7 +213,7 @@ const Notes = () => {
                 <Button variant="secondary" size="sm" className="flex-1" onClick={() => startEditing(note, _id)}>
                   Edit
                 </Button>
-                <Button variant="danger" size="sm" className="flex-1" onClick={() => handleDelete(_id)}>
+                <Button variant="danger" size="sm" className="flex-1" onClick={() => openDeleteModal(_id)}>
                   Delete
                 </Button>
               </div>
@@ -216,6 +221,28 @@ const Notes = () => {
           </Card>
         ))}
       </motion.div>
+
+      {pendingDeleteId &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div className="fixed inset-0 z-[999] bg-black/70 px-4 py-10">
+            <div className="absolute left-1/2 top-1/2 w-[clamp(18rem,90vw,26rem)] -translate-x-1/2 -translate-y-1/2 rounded-3xl border border-white/10 bg-surface p-6 shadow-glow dark:bg-dusk/95">
+              <h2 className="font-display text-2xl text-primary">Delete this note?</h2>
+              <p className="mt-3 text-sm text-muted">
+                This action permanently removes the note. You can’t undo it later.
+              </p>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <Button variant="danger" className="flex-1" onClick={() => handleDelete(pendingDeleteId)}>
+                  Yes, delete it
+                </Button>
+                <Button variant="secondary" className="flex-1" onClick={closeDeleteModal}>
+                  Keep note
+                </Button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </section>
   );
 };
